@@ -1,0 +1,22 @@
+{
+  "name": "tap-webpack-plugin",
+  "version": "1.0.0",
+  "description": "Run TAP tests on every compile with webpack",
+  "main": "index.js",
+  "scripts": {
+    "pretest": "standard",
+    "test": "webpack --config webpack.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^3.10.1",
+    "tap-out": "^1.3.2"
+  },
+  "devDependencies": {
+    "standard": "^5.1.1",
+    "tape": "^4.2.0",
+    "webpack": "^1.12.0"
+  }
+}
