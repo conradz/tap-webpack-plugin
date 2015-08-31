@@ -1,11 +1,14 @@
 # tap-webpack-plugin
 
+[![travis][travis-image]][travis-url]
+[![js-standard-style][standard-image]][standard-url]
+[![npm][npm-image]][npm-url]
+
 Run TAP tests on every compile with webpack
 
-This is a plugin for [webpack](https://webpack.github.io/) that runs the
-generated output bundle with Node.js and parses the output as
-[TAP](https://testanything.org/). This works well with `webpack --watch` as it
-will run your tests every time a file changes.
+This is a plugin for [webpack][webpack-url] that runs the generated output
+bundle with Node.js and parses the output as [TAP][tap-url]. This works well
+with `webpack --watch` as it will run your tests every time a file changes.
 
 Note: You should use the `target: 'node'` option in your webpack configuration
 as the generated output will be run with Node.js.
@@ -81,3 +84,12 @@ module.exports = [
 
 Then run `webpack` just like normal and your main bundle will be generated and
 your tests will be compiled and run, all in one command!
+
+[travis-image]: https://img.shields.io/travis/conradz/tap-webpack-plugin.svg?style=flat
+[travis-url]: https://travis-ci.org/conradz/tap-webpack-plugin
+[standard-image]: https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat
+[standard-url]: https://github.com/feross/standard
+[npm-image]: https://img.shields.io/npm/v/tap-webpack-plugin.svg?style=flat
+[npm-url]: https://npmjs.org/package/tap-webpack-plugin
+[webpack-url]: https://webpack.github.io/
+[tap-url]: https://testanything.org/
