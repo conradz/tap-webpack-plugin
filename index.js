@@ -3,11 +3,21 @@ var spawn = require('child_process').spawn
 var map = require('lodash/collection/map')
 var filter = require('lodash/collection/filter')
 var forEach = require('lodash/collection/forEach')
+var which = require('which')
 
-function TapWebpackPlugin () {
+function TapWebpackPlugin (formatter) {
+  if (formatter) {
+    try {
+      which.sync(formatter)
+    } catch (e) {
+      throw new Error(`Formatter '${formatter}' not found`)
+    }
+  }
+
+  return { apply: apply.bind(this, formatter) }
 }
 
-TapWebpackPlugin.prototype.apply = function (compiler) {
+function apply (formatter, compiler) {
   compiler.plugin('after-emit', emitted)
 
   function emitted (compilation, callback) {
@@ -22,6 +32,13 @@ TapWebpackPlugin.prototype.apply = function (compiler) {
     var parser = tapOut(parsed)
     var proc = spawn(process.execPath, { stdio: ['pipe', 'pipe', 'inherit'] })
 
+    var useFormatter = false
+    if (typeof formatter === 'string') {
+      useFormatter = true
+      var formatterProc = spawn(which.sync(formatter), {stdio: ['pipe', 1, 2]})
+      proc.stdout.pipe(formatterProc.stdin)
+    }
+
     proc.stdout.pipe(parser)
     proc.stdin.end(source, 'utf8')
     proc.on('exit', exited)
@@ -34,7 +51,9 @@ TapWebpackPlugin.prototype.apply = function (compiler) {
         forEach(results.fail, function (f) {
           var test = results.tests[f.test - 1]
           var message = getMessage(test, f)
-          compilation.errors.push(new Error(message))
+          if (useFormatter === false) {
+            compilation.errors.push(new Error(message))
+          }
         })
       }
 
@@ -43,7 +62,7 @@ TapWebpackPlugin.prototype.apply = function (compiler) {
     }
 
     function exited (code) {
-      if (code !== 0) {
+      if (code !== 0 && useFormatter === false) {
         compilation.errors.push(new Error('tests failed'))
       }
 
