@@ -10,6 +10,10 @@ This is a plugin for [webpack][webpack-url] that runs the generated output
 bundle with Node.js and parses the output as [TAP][tap-url]. This works well
 with `webpack --watch` as it will run your tests every time a file changes.
 
+You can use the default formatter or pass the name of the TAP formatter of
+your choice to the plugin. It checks your PATH and pipes your TAP through
+whatever application it finds.
+
 Note: You should use the `target: 'node'` option in your webpack configuration
 as the generated output will be run with Node.js.
 
