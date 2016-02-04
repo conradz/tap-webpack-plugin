@@ -10,7 +10,7 @@ function TapWebpackPlugin (formatter) {
     try {
       which.sync(formatter)
     } catch (e) {
-      throw new Error(`Formatter '${formatter}' not found`)
+      throw new Error('Formatter ' + formatter + ' not found')
     }
   }
 
