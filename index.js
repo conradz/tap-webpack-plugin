@@ -1,24 +1,18 @@
 var tapOut = require('tap-out')
 var spawn = require('child_process').spawn
+var exec = require('child_process').exec
 var map = require('lodash/collection/map')
 var filter = require('lodash/collection/filter')
 var forEach = require('lodash/collection/forEach')
 var which = require('which')
 
 function TapWebpackPlugin (formatter) {
-  if (formatter) {
-    try {
-      which.sync(formatter)
-    } catch (e) {
-      throw new Error('Formatter ' + formatter + ' not found')
-    }
-  }
-
-  return { apply: apply.bind(this, formatter) }
+  this.formatter = formatter
 }
 
-function apply (formatter, compiler) {
+TapWebpackPlugin.prototype.apply = function(compiler) {
   compiler.plugin('after-emit', emitted)
+  var formatter = this.formatter
 
   function emitted (compilation, callback) {
     var entry = filter(compilation.chunks, 'entry')
