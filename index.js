@@ -27,12 +27,13 @@ TapWebpackPlugin.prototype.apply = function (compiler) {
     var useFormatter = false
     if (formatter && typeof formatter === 'string') {
       try {
-        useFormatter = true
-        var formatterProc = spawn(which.sync(formatter), {stdio: ['pipe', 1, 2]})
-        proc.stdout.pipe(formatterProc.stdin)
+        which.sync(formatter)
       } catch (e) {
         throw new Error('Formatter \'' + formatter + '\' not found')
       }
+      var formatterProc = spawn(which.sync(formatter), {stdio: ['pipe', 1, 2]})
+      useFormatter = true
+      proc.stdout.pipe(formatterProc.stdin)
     }
 
     proc.stdout.pipe(parser)
