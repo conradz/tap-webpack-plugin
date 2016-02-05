@@ -1,6 +1,5 @@
 var tapOut = require('tap-out')
 var spawn = require('child_process').spawn
-var exec = require('child_process').exec
 var map = require('lodash/collection/map')
 var filter = require('lodash/collection/filter')
 var forEach = require('lodash/collection/forEach')
@@ -10,10 +9,9 @@ function TapWebpackPlugin (formatter) {
   this.formatter = formatter
 }
 
-TapWebpackPlugin.prototype.apply = function(compiler) {
+TapWebpackPlugin.prototype.apply = function (compiler) {
   compiler.plugin('after-emit', emitted)
   var formatter = this.formatter
-
   function emitted (compilation, callback) {
     var entry = filter(compilation.chunks, 'entry')
     var files = map(entry, function (c) { return c.files[0] })
@@ -27,10 +25,14 @@ TapWebpackPlugin.prototype.apply = function(compiler) {
     var proc = spawn(process.execPath, { stdio: ['pipe', 'pipe', 'inherit'] })
 
     var useFormatter = false
-    if (typeof formatter === 'string') {
-      useFormatter = true
-      var formatterProc = spawn(which.sync(formatter), {stdio: ['pipe', 1, 2]})
-      proc.stdout.pipe(formatterProc.stdin)
+    if (formatter && typeof formatter === 'string') {
+      try {
+        useFormatter = true
+        var formatterProc = spawn(which.sync(formatter), {stdio: ['pipe', 1, 2]})
+        proc.stdout.pipe(formatterProc.stdin)
+      } catch (e) {
+        throw new Error('Formatter \'' + formatter + '\' not found')
+      }
     }
 
     proc.stdout.pipe(parser)
