@@ -1,5 +1,6 @@
 var tapOut = require('tap-out')
 var runParallel = require('run-parallel')
+var execSpawn = require('execspawn')
 var spawn = require('child_process').spawn
 var map = require('lodash/collection/map')
 var filter = require('lodash/collection/filter')
@@ -21,7 +22,22 @@ function run (options, compilation, callback) {
 
   var proc = spawn(process.execPath, { stdio: ['pipe', 'pipe', 'inherit'] })
   proc.stdin.end(source, 'utf8')
-  return runParallel([parse, exit], callback)
+  return runParallel([
+    options.reporter ? report : parse,
+    exit
+  ], callback)
+
+  function report (callback) {
+    var reporter = execSpawn(options.reporter,
+      { stdio: ['pipe', 'inherit', 'inherit'] })
+    proc.stdout.pipe(reporter.stdin)
+    reporter.on('exit', exited)
+
+    function exited (code) {
+      if (code !== 0) addError('test reporter non-zero exit code')
+      return callback()
+    }
+  }
 
   function parse (callback) {
     proc.stdout.pipe(tapOut(parsed))

@@ -10,6 +10,7 @@ module.exports = {
   },
 
   plugins: [
-    new TapWebpackPlugin()
+    new TapWebpackPlugin(),
+    new TapWebpackPlugin({ reporter: 'tap-spec' })
   ]
 }

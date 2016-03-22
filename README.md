@@ -13,6 +13,22 @@ with `webpack --watch` as it will run your tests every time a file changes.
 Note: You should use the `target: 'node'` option in your webpack configuration
 as the generated output will be run with Node.js.
 
+## Using a TAP Reporter
+
+By default this plugin will parse the TAP output and report any errors from the
+TAP output to webpack. If instead you want to pass the TAP output to a
+[TAP reporter][reporters], just use the `reporter` option, like this:
+
+```js
+new TapWebpackPlugin({ reporter: 'tap-spec' })
+```
+
+The `reporter` option specifies the command line for the reporter. It will be
+run in a shell, so you can pass arguments such as `'tap-spec --no-color'`.
+Output from the TAP reporter will be written directly to the stdout of the
+webpack process. If the TAP reporter command exits with a non-zero exit code,
+the plugin will report an error to webpack.
+
 ## Example
 
 ```js
@@ -30,7 +46,10 @@ module.exports = {
   },
 
   plugins: [
-    new TapWebpackPlugin()
+    new TapWebpackPlugin(),
+
+    // or with a reporter:
+    new TapWebpackPlugin({ reporter: 'tap-spec' })
   ]
 }
 ```
@@ -93,3 +112,4 @@ your tests will be compiled and run, all in one command!
 [npm-url]: https://npmjs.org/package/tap-webpack-plugin
 [webpack-url]: https://webpack.github.io/
 [tap-url]: https://testanything.org/
+[reporters]: https://github.com/sindresorhus/awesome-tap#reporters
