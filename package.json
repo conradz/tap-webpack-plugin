@@ -7,8 +7,12 @@
     "pretest": "standard",
     "test": "webpack --config webpack.test.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "test",
+    "webpack",
+    "tap"
+  ],
+  "author": "Conrad Zimmerman <me@conradz.com>",
   "license": "ISC",
   "dependencies": {
     "execspawn": "^1.0.1",
