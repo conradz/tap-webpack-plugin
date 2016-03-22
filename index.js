@@ -1,61 +1,56 @@
 var tapOut = require('tap-out')
+var runParallel = require('run-parallel')
 var spawn = require('child_process').spawn
 var map = require('lodash/collection/map')
 var filter = require('lodash/collection/filter')
 var forEach = require('lodash/collection/forEach')
 
-function TapWebpackPlugin () {
+function TapWebpackPlugin (options) {
+  this.options = options || {}
 }
 
 TapWebpackPlugin.prototype.apply = function (compiler) {
-  compiler.plugin('after-emit', emitted)
+  compiler.plugin('after-emit', run.bind(null, this.options))
+}
 
-  function emitted (compilation, callback) {
-    var entry = filter(compilation.chunks, 'entry')
-    var files = map(entry, function (c) { return c.files[0] })
-    var assets = map(files, function (f) { return compilation.assets[f] })
-    var source = map(assets, function (a) { return a.source() }).join('\n')
+function run (options, compilation, callback) {
+  var entry = filter(compilation.chunks, 'entry')
+  var files = map(entry, function (c) { return c.files[0] })
+  var assets = map(files, function (f) { return compilation.assets[f] })
+  var source = map(assets, function (a) { return a.source() }).join('\n')
 
-    var isExited = false
-    var isParsed = false
+  var proc = spawn(process.execPath, { stdio: ['pipe', 'pipe', 'inherit'] })
+  proc.stdin.end(source, 'utf8')
+  return runParallel([parse, exit], callback)
 
-    var parser = tapOut(parsed)
-    var proc = spawn(process.execPath, { stdio: ['pipe', 'pipe', 'inherit'] })
-
-    proc.stdout.pipe(parser)
-    proc.stdin.end(source, 'utf8')
-    proc.on('exit', exited)
+  function parse (callback) {
+    proc.stdout.pipe(tapOut(parsed))
 
     function parsed (err, results) {
       if (err) {
-        compilation.errors.push(
-            new Error('could not parse TAP output'))
+        addError('could not parse TAP output')
       } else if (results.fail.length > 0) {
-        forEach(results.fail, function (f) {
-          var test = results.tests[f.test - 1]
-          var message = getMessage(test, f)
-          compilation.errors.push(new Error(message))
-        })
+        forEach(map(results.fail, getError), addError)
       }
+      return callback()
 
-      isParsed = true
-      return done()
+      function getError (f) {
+        return getMessage(results.tests[f.test - 1], f)
+      }
     }
+  }
+
+  function exit (callback) {
+    proc.on('exit', exited)
 
     function exited (code) {
-      if (code !== 0) {
-        compilation.errors.push(new Error('tests failed'))
-      }
-
-      isExited = true
-      return done()
+      if (code !== 0) addError('tests failed')
+      return callback()
     }
+  }
 
-    function done () {
-      if (isExited && isParsed) {
-        return callback()
-      }
-    }
+  function addError (message) {
+    compilation.errors.push(new Error(message))
   }
 }
 
