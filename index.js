@@ -2,8 +2,6 @@ var tapOut = require('tap-out')
 var runParallel = require('run-parallel')
 var execSpawn = require('execspawn')
 var spawn = require('child_process').spawn
-var map = require('lodash/collection/map')
-var forEach = require('lodash/collection/forEach')
 
 function TapWebpackPlugin (options) {
   this.options = options || {}
@@ -14,10 +12,10 @@ TapWebpackPlugin.prototype.apply = function (compiler) {
 }
 
 function run (options, compilation, callback) {
-  var entry = compilation.chunks.filter(c => c.hasRuntime())
-  var files = map(entry, function (c) { return c.files[0] })
-  var assets = map(files, function (f) { return compilation.assets[f] })
-  var source = map(assets, function (a) { return a.source() }).join('\n')
+  var entry = compilation.chunks.filter((c) => c.hasRuntime())
+  var files = entry.map((c) => c.files[0])
+  var assets = files.map((f) => compilation.assets[f])
+  var source = assets.map((a) => a.source()).join('\n')
 
   var proc = spawn(process.execPath, { stdio: ['pipe', 'pipe', 'inherit'] })
   proc.stdin.end(source, 'utf8')
@@ -45,7 +43,7 @@ function run (options, compilation, callback) {
       if (err) {
         addError('could not parse TAP output')
       } else if (results.fail.length > 0) {
-        forEach(map(results.fail, getError), addError)
+        results.fail.map(getError).forEach(addError)
       }
       return callback()
 
