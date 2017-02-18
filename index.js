@@ -3,7 +3,6 @@ var runParallel = require('run-parallel')
 var execSpawn = require('execspawn')
 var spawn = require('child_process').spawn
 var map = require('lodash/collection/map')
-var filter = require('lodash/collection/filter')
 var forEach = require('lodash/collection/forEach')
 
 function TapWebpackPlugin (options) {
@@ -15,7 +14,7 @@ TapWebpackPlugin.prototype.apply = function (compiler) {
 }
 
 function run (options, compilation, callback) {
-  var entry = filter(compilation.chunks, 'entry')
+  var entry = compilation.chunks.filter(c => c.hasRuntime())
   var files = map(entry, function (c) { return c.files[0] })
   var assets = map(files, function (f) { return compilation.assets[f] })
   var source = map(assets, function (a) { return a.source() }).join('\n')
